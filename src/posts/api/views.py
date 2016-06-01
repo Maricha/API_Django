@@ -70,3 +70,8 @@ class PostDeleteAPIView(DestroyAPIView):
 class PostDetailAPIView(RetrieveAPIView):
 	queryset = Post.objects.all()
 	serializer_class = PostDetailSerializer
+
+
+class PostListAPIViewTest(ListAPIView):
+	queryset = Post.objects.filter(title="Cos")
+	serializer_class = PostListSerializer
