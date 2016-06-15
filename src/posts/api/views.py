@@ -1,6 +1,6 @@
 from django.db.models import Q
 from rest_framework.generics import (
-	ListAPIView, 
+	ListAPIView,
 	RetrieveAPIView,
 	UpdateAPIView,
 	DestroyAPIView,
@@ -13,13 +13,23 @@ from rest_framework.permissions import (
 	IsAdminUser,
 	IsAuthenticatedOrReadOnly,
 	)
+from rest_framework.filters import  (
+	SearchFilter,
+	OrderingFilter,
+)
+
+from rest_framework.pagination import (
+	LimitOffsetPagination,
+	PageNumberPagination,
+)
 
 from posts.models import Post
 from rest_framework import filters
 from .permissions import IsOwnerOrReadOnly
+from .pagination import PostLimitOffsetPagination
 from .serializers import (
-	PostListSerializer, 
-	PostDetailSerializer, 
+	PostListSerializer,
+	PostDetailSerializer,
 	PostCreateUpdateSerializer
 	)
 
@@ -35,24 +45,21 @@ class PostCreateAPIView(CreateAPIView):
 
 class PostListAPIView(ListAPIView):
 	serializer_class = PostListSerializer
+	filter_backends = [SearchFilter]
+	search_fields = ['title', 'content', "user__first_name"]
+	pagination_class = PostLimitOffsetPagination
 
 	def get_queryset(self, *args, **kwargs):
 		queryset_list = Post.objects.all()
-		title = self.request.query_params.get('abc', None)
-
-		if title is not None:
-			queryset_list = queryset_list.filter(title="Cos")
-		#query = self.request.GET.get("a")
+		query = self.request.GET.get("q")
+		if query:
+			queryset_list = queryset_list.filter(
+				Q(title__icontains=query)|
+				Q(content__icontains=query)|
+				Q(user__first_name__icontains=query)|
+				Q(user__last_name__icontains=query)
+				).distinct()
 		return queryset_list
-
-
-		#if query:
-			#queryset_list = Post.objects.filter(title="Cos")
-			#queryset_list = queryset_list.filter(title="Cos")
-				#Q(title__icontains=query)|
-				#Q(content__icontains=query)
-				#).distinct()
-		#return queryset_list
 
 
 class PostUpdateAPIView(RetrieveUpdateAPIView):
@@ -70,8 +77,3 @@ class PostDeleteAPIView(DestroyAPIView):
 class PostDetailAPIView(RetrieveAPIView):
 	queryset = Post.objects.all()
 	serializer_class = PostDetailSerializer
-
-
-class PostListAPIViewTest(ListAPIView):
-	queryset = Post.objects.filter(title="Cos")
-	serializer_class = PostListSerializer
