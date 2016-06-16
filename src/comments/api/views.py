@@ -22,24 +22,51 @@ from rest_framework.pagination import (
 	LimitOffsetPagination,
 	PageNumberPagination,
 )
-
+from rest_framework.permissions import (
+	AllowAny,
+	IsAuthenticated,
+	IsAdminUser,
+	IsAuthenticatedOrReadOnly,
+)
+from rest_framework.mixins import DestroyModelMixin, UpdateModelMixin
 from comments.models import Comment
 from rest_framework import filters
 from posts.api.permissions import IsOwnerOrReadOnly
 from posts.api.pagination import PostLimitOffsetPagination
 from .serializers import (
 	CommentSerializer,
+	CommentChildSerializer,
+	CommentDetailSerializer,
+	create_comment_serializer,
 
 	)
 
 
-# class PostCreateAPIView(CreateAPIView):
-# 	queryset = Post.objects.all()
-# 	serializer_class = PostCreateUpdateSerializer
-# 	permission_classes = [IsAuthenticated, IsAdminUser]
-#
-# 	def perform_create(self, serializer):
-# 		serializer.save(user=self.request.user)
+class CommentCreateAPIView(CreateAPIView):
+	queryset = Comment.objects.all()
+	permission_classes = [IsAuthenticated,]
+
+	def get_serializer_class(self):
+		model_type = self.request.GET.get("type")
+		slug = self.request.GET.get("slug")
+		parent_id = self.request.GET.get("parent_id", None)
+		return create_comment_serializer(
+			model_type=model_type,
+			slug=slug,
+			parent_id=parent_id,
+			user=self.request.user
+		)
+
+class CommentDetailAPIView(UpdateModelMixin, DestroyModelMixin, RetrieveAPIView):
+	queryset = Comment.objects.filter(id__gte=0)
+	serializer_class = CommentDetailSerializer
+	permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+	def put(self, request, *args, **kwargs):
+		return self.update(request, *args, **kwargs)
+
+	def delete(sefl, request, *args, **kwargs):
+		return self.destroy(request, *args, **kwargs)
 
 
 class CommentListAPIView(ListAPIView):
@@ -71,7 +98,3 @@ class CommentListAPIView(ListAPIView):
 # class PostDeleteAPIView(DestroyAPIView):
 # 	queryset = Post.objects.all()
 # 	serializer_class = PostListSerializer
-
-class CommentDetailAPIView(RetrieveAPIView):
-	queryset = Comment.objects.all()
-	serializer_class = CommentSerializer
