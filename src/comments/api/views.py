@@ -34,7 +34,7 @@ from rest_framework import filters
 from posts.api.permissions import IsOwnerOrReadOnly
 from posts.api.pagination import PostLimitOffsetPagination
 from .serializers import (
-	CommentSerializer,
+	CommentListSerializer,
 	CommentChildSerializer,
 	CommentDetailSerializer,
 	create_comment_serializer,
@@ -70,7 +70,7 @@ class CommentDetailAPIView(UpdateModelMixin, DestroyModelMixin, RetrieveAPIView)
 
 
 class CommentListAPIView(ListAPIView):
-	serializer_class = CommentSerializer
+	serializer_class = CommentListSerializer
 	filter_backends = [SearchFilter]
 	search_fields = ['content', "user__first_name"]
 	pagination_class = PostLimitOffsetPagination

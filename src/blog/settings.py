@@ -147,12 +147,29 @@ MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "media_cdn")
 
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'rest_framework.authentication.SessionAuthentication',
+        #'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+'''
+curl -X POST -d "username=adam&password=adam" http://127.0.0.1:8000/api/auth/token/
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkYW0iLCJ1c2VyX2lkIjoxNiwiZW1haWwiOiJhZGFtQGFkYW0ucnUiLCJleHAiOjE0NjY0OTQ5MDZ9.2AAARMsykQZbool-o2xUuDkic7HcZk_av5fkMfI3Yys
+
+curl -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkYW0iLCJ1c2VyX2lkIjoxNiwiZW1haWwiOiJhZGFtQGFkYW0ucnUiLCJleHAiOjE0NjY0OTQ5MDZ9.2AAARMsykQZbool-o2xUuDkic7HcZk_av5fkMfI3Yys
+" http://127.0.0.1:8000/api/comments/
 
 
-
-
-
-
-
-
-
+'''
